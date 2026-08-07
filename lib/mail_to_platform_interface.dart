@@ -31,8 +31,14 @@ abstract class MailToPlatform extends PlatformInterface {
   }
 
   /// Shows the OS dialog listing installed mail apps and returns the pick,
-  /// or `null` when dismissed.
-  Future<MailApp?> pickApp({String? title, String? cancelLabel}) {
+  /// or `null` when dismissed or when nothing is installed.
+  Future<MailApp?> pickApp({
+    String? title,
+    String? cancelLabel,
+    String? emptyMessage,
+    String? okLabel,
+    bool showEmptyAlert = true,
+  }) {
     throw UnimplementedError('pickApp() has not been implemented.');
   }
 }

@@ -24,7 +24,13 @@ class FakeMailToPlatform extends MailToPlatform with MockPlatformInterfaceMixin 
   }
 
   @override
-  Future<MailApp?> pickApp({String? title, String? cancelLabel}) async {
+  Future<MailApp?> pickApp({
+    String? title,
+    String? cancelLabel,
+    String? emptyMessage,
+    String? okLabel,
+    bool showEmptyAlert = true,
+  }) async {
     pickAppCalls++;
     return pick;
   }
@@ -87,13 +93,17 @@ void main() {
       expect(platform.composedWith, isNull);
     });
 
-    test('should not compose when no mail app is installed', () async {
-      platform.apps = const [];
+    test('should defer the empty case to the native alert', () async {
+      platform
+        ..apps = const []
+        ..pick = null;
 
       final isComposed = await MailTo.pickAndCompose(message);
 
       expect(isComposed, isFalse);
-      expect(platform.pickAppCalls, 0);
+      // pickApp is still called: the platform side owns the "no mail app"
+      // alert, so callers need no branch of their own.
+      expect(platform.pickAppCalls, 1);
       expect(platform.composedWith, isNull);
     });
   });

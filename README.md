@@ -30,6 +30,21 @@ const message = MailMessage(
 await MailTo.pickAndCompose(message);
 ```
 
+No mail app installed? `pickApp` / `pickAndCompose` put up a native one-button
+alert and return `null` / `false` — you write no empty-list branch:
+
+```dart
+await MailTo.pickAndCompose(
+  message,
+  dialogTitle: 'Choose a mail app',
+  cancelLabel: 'Cancel',
+  emptyMessage: 'No mail app is installed on this device.',
+  okLabel: 'OK',
+);
+```
+
+Pass `showEmptyAlert: false` to suppress that alert and just get `null` back.
+
 Driving the list yourself:
 
 ```dart

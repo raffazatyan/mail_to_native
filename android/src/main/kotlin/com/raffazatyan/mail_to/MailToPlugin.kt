@@ -126,11 +126,16 @@ class MailToPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
 
     // region Picker
 
-    /** Native [AlertDialog] — a centred list, matching the iOS `.alert` picker. */
+    /**
+     * Native [AlertDialog] — a centred list, matching the iOS `.alert` picker.
+     *
+     * With no mail app installed this puts up a one-button dialog and answers
+     * `null`, so callers need no branch of their own.
+     */
     private fun pickApp(call: MethodCall, result: Result) {
         val currentActivity = activity
         val apps = installedApps()
-        if (currentActivity == null || apps.isEmpty()) {
+        if (currentActivity == null) {
             result.success(null)
             return
         }
@@ -140,6 +145,25 @@ class MailToPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             if (answered) return
             answered = true
             result.success(value)
+        }
+
+        if (apps.isEmpty()) {
+            if (call.argument<Boolean>("showEmptyAlert") == false) {
+                answer(null)
+                return
+            }
+            AlertDialog.Builder(currentActivity)
+                .setTitle(call.argument<String>("title") ?: "Choose a mail app")
+                .setMessage(
+                    call.argument<String>("emptyMessage")
+                        ?: "No mail app is installed on this device."
+                )
+                .setPositiveButton(call.argument<String>("okLabel") ?: "OK") { _, _ ->
+                    answer(null)
+                }
+                .setOnCancelListener { answer(null) }
+                .show()
+            return
         }
 
         AlertDialog.Builder(currentActivity)

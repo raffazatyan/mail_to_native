@@ -38,29 +38,48 @@ abstract final class MailTo {
   /// Shows the OS dialog listing installed mail apps.
   ///
   /// Returns the pick, or `null` when the user dismisses it.
-  static Future<MailApp?> pickApp({String? title, String? cancelLabel}) =>
-      MailToPlatform.instance.pickApp(
-        title: title,
-        cancelLabel: cancelLabel,
-      );
+  ///
+  /// With no mail app installed it shows a one-button alert ([emptyMessage] +
+  /// [okLabel]) and returns `null` — callers need no empty-list branch. Pass
+  /// `showEmptyAlert: false` to suppress it and just get `null`.
+  static Future<MailApp?> pickApp({
+    String? title,
+    String? cancelLabel,
+    String? emptyMessage,
+    String? okLabel,
+    bool showEmptyAlert = true,
+  }) => MailToPlatform.instance.pickApp(
+    title: title,
+    cancelLabel: cancelLabel,
+    emptyMessage: emptyMessage,
+    okLabel: okLabel,
+    showEmptyAlert: showEmptyAlert,
+  );
 
   /// Picks a mail app and composes in one step.
   ///
-  /// Skips the dialog when exactly one app is installed. Returns `false` when
-  /// nothing is installed or the user dismissed the dialog.
+  /// Skips the dialog when exactly one app is installed, and shows the
+  /// "no mail app" alert when none is. Returns `false` when nothing was
+  /// composed.
   static Future<bool> pickAndCompose(
     MailMessage message, {
     String? dialogTitle,
     String? cancelLabel,
+    String? emptyMessage,
+    String? okLabel,
+    bool showEmptyAlert = true,
   }) async {
     final apps = await installedApps();
-    if (apps.isEmpty) {
-      return false;
-    }
 
     final app = apps.length == 1
         ? apps.first
-        : await pickApp(title: dialogTitle, cancelLabel: cancelLabel);
+        : await pickApp(
+            title: dialogTitle,
+            cancelLabel: cancelLabel,
+            emptyMessage: emptyMessage,
+            okLabel: okLabel,
+            showEmptyAlert: showEmptyAlert,
+          );
     if (app == null) {
       return false;
     }

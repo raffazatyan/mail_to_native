@@ -91,6 +91,9 @@ public class MailToPlugin: NSObject, FlutterPlugin {
             pickApp(
                 title: args["title"] as? String,
                 cancelLabel: args["cancelLabel"] as? String,
+                emptyMessage: args["emptyMessage"] as? String,
+                okLabel: args["okLabel"] as? String,
+                showEmptyAlert: args["showEmptyAlert"] as? Bool ?? true,
                 result: result
             )
 
@@ -216,10 +219,34 @@ public class MailToPlugin: NSObject, FlutterPlugin {
 
     /// `.alert` style so the list lands centred on screen on both iPhone and
     /// iPad, where `.actionSheet` would need a popover anchor.
-    private func pickApp(title: String?, cancelLabel: String?, result: @escaping FlutterResult) {
+    ///
+    /// With no mail app installed this puts up a one-button alert and answers
+    /// `nil`, so callers need no branch of their own.
+    private func pickApp(
+        title: String?, cancelLabel: String?, emptyMessage: String?, okLabel: String?,
+        showEmptyAlert: Bool, result: @escaping FlutterResult
+    ) {
         let apps = installedApps()
-        guard !apps.isEmpty, let presenter = Self.topViewController() else {
+        guard let presenter = Self.topViewController() else {
             result(nil)
+            return
+        }
+
+        if apps.isEmpty {
+            guard showEmptyAlert else {
+                result(nil)
+                return
+            }
+            let alert = UIAlertController(
+                title: title ?? "Choose a mail app",
+                message: emptyMessage ?? "No mail app is installed on this device.",
+                preferredStyle: .alert
+            )
+            alert.addAction(
+                UIAlertAction(title: okLabel ?? "OK", style: .default) { _ in
+                    result(nil)
+                })
+            presenter.present(alert, animated: true)
             return
         }
 

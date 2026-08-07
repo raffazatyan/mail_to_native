@@ -14,3 +14,11 @@
   README). Android detects it automatically.
 * Fixed per-client compose query keys: Spark takes `recipient`, Airmail takes
   `plainBody`. Both previously received `to`/`body` and dropped them.
+
+## 0.2.0
+
+* `pickApp` / `pickAndCompose` now show a native one-button alert when no mail
+  app is installed, so callers need no empty-list branch. New optional
+  `emptyMessage`, `okLabel` and `showEmptyAlert` parameters.
+* `pickAndCompose` no longer short-circuits on an empty list — it hands the
+  case to the platform dialog.

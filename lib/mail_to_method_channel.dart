@@ -32,10 +32,22 @@ class MethodChannelMailTo extends MailToPlatform {
   }
 
   @override
-  Future<MailApp?> pickApp({String? title, String? cancelLabel}) async {
+  Future<MailApp?> pickApp({
+    String? title,
+    String? cancelLabel,
+    String? emptyMessage,
+    String? okLabel,
+    bool showEmptyAlert = true,
+  }) async {
     final picked = await methodChannel.invokeMapMethod<Object?, Object?>(
       'pickApp',
-      {'title': title, 'cancelLabel': cancelLabel},
+      {
+        'title': title,
+        'cancelLabel': cancelLabel,
+        'emptyMessage': emptyMessage,
+        'okLabel': okLabel,
+        'showEmptyAlert': showEmptyAlert,
+      },
     );
 
     return picked == null ? null : MailApp.fromMap(picked);
