@@ -318,8 +318,10 @@ public class MailToPlugin: NSObject, FlutterPlugin {
         }
 
         let picture = image.flatMap(UIImage.init(data:))
-        // The rendered picture makes a better thumbnail than the app icon.
-        let icon = headerIcon.flatMap(UIImage.init(data:)) ?? picture ?? Self.appIcon()
+        // Left nil unless the caller supplied artwork: iOS then draws the host
+        // app's icon full-bleed. Feeding it an app-icon slice ourselves makes
+        // LinkPresentation aspect-fit the image into a white tile instead.
+        let icon = headerIcon.flatMap(UIImage.init(data:)) ?? picture
         let source = SubjectActivityItemSource(
             subject: subject,
             body: body,
@@ -353,24 +355,6 @@ public class MailToPlugin: NSObject, FlutterPlugin {
     }
 
     // MARK: - Helpers
-
-    /// The host app's own icon, for the share-sheet header.
-    ///
-    /// Asset-catalog app icons are not addressable by their catalog name, so
-    /// the actual filename is read out of `CFBundleIcons`.
-    private static func appIcon() -> UIImage? {
-        guard
-            let icons = Bundle.main.object(forInfoDictionaryKey: "CFBundleIcons")
-                as? [String: Any],
-            let primary = icons["CFBundlePrimaryIcon"] as? [String: Any],
-            let files = primary["CFBundleIconFiles"] as? [String],
-            let lastFile = files.last
-        else {
-            return nil
-        }
-
-        return UIImage(named: lastFile)
-    }
 
     private func invalidArguments() -> FlutterError {
         FlutterError(

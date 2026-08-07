@@ -70,3 +70,10 @@
   Android switches the chooser to `image/png` and serves the file through the
   plugin's own `FileProvider`, so host apps need no manifest change.
 * The picture doubles as the sheet's preview thumbnail unless `icon` overrides.
+
+## 0.7.1
+
+* Fixed the share-sheet header icon rendering inset inside a white tile. The
+  plugin no longer loads the host app's icon itself — with no `iconProvider`
+  set, iOS draws that icon full-bleed on its own. Pass `ShareMetadata.icon`
+  only to override it deliberately.

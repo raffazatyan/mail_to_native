@@ -20,8 +20,12 @@ class ShareMetadata {
   /// domain. iOS only.
   final String? subtitle;
 
-  /// PNG or JPEG bytes for the thumbnail. Defaults to the host app's icon,
-  /// or to [image] when one is given. iOS only.
+  /// PNG or JPEG bytes for the thumbnail.
+  ///
+  /// Leave it null — iOS then draws the host app's icon full-bleed, which is
+  /// what you want in almost every case. Supplying artwork makes
+  /// LinkPresentation aspect-fit it into a white tile. Falls back to [image]
+  /// when one is given. iOS only.
   final Uint8List? icon;
 
   /// PNG bytes shared as a picture alongside the text — a rendered card, a

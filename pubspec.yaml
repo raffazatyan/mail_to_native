@@ -1,6 +1,6 @@
 name: mail_to
 description: "Pick an installed mail app and open its compose screen with subject and body prefilled."
-version: 0.7.0
+version: 0.7.1
 homepage: https://github.com/raffazatyan/mail_to
 repository: https://github.com/raffazatyan/mail_to
 issue_tracker: https://github.com/raffazatyan/mail_to/issues
