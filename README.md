@@ -59,10 +59,39 @@ iOS cannot enumerate installed apps. `canOpenURL` returns `false` for any scheme
   <string>airmail</string>
   <string>fastmail</string>
   <string>protonmail</string>
+  <string>mailru-mail</string>
 </array>
 ```
 
-Keep any schemes already in that array — add to it, don't replace it.
+Keep any schemes already in that array — add to it, don't replace it. Listing only a subset is fine: apps you leave out simply never appear in the picker.
+
+### Why the package cannot do this for you
+
+`canOpenURL` reads `LSApplicationQueriesSchemes` from **the app bundle's** `Info.plist` (`Runner.app/Info.plist`). A pod's `s.info_plist` writes the *plugin framework's* Info.plist, which iOS never consults, and SwiftPM has no Info.plist merging at all. Xcode copies one Info.plist per target — there is no merge step, unlike Android's manifest merger (which is why the `<queries>` block *can* ship inside this package).
+
+If you would rather not maintain the list by hand, add this to your app's `ios/Podfile` — it patches `Runner/Info.plist` on every `pod install`:
+
+```ruby
+post_install do |installer|
+  # … your existing post_install body …
+
+  require 'xcodeproj'
+  schemes = %w[googlegmail ms-outlook readdle-spark ymail airmail fastmail protonmail mailru-mail]
+  plist_path = File.join(__dir__, 'Runner', 'Info.plist')
+  plist = Xcodeproj::Plist.read_from_path(plist_path)
+  existing = plist['LSApplicationQueriesSchemes'] || []
+  plist['LSApplicationQueriesSchemes'] = (existing + schemes).uniq
+  Xcodeproj::Plist.write_to_path(plist, plist_path)
+end
+```
+
+Trade-off: it rewrites a tracked file, so it will show up in `git status` the first time and re-add any scheme you deliberately removed.
+
+### Mail.ru
+
+Mail.ru publishes no compose URL scheme — `mailru-mail` is the community-reported one and is **unverified**. If the app is installed but never appears in the picker, that scheme is wrong. A bad guess is harmless: detection just skips it. Reports with a confirmed scheme are welcome.
+
+Android needs none of this — Mail.ru is enumerated like any other `mailto:` handler.
 
 ## Android setup
 

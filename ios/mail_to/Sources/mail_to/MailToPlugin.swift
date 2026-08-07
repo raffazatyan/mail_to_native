@@ -13,6 +13,22 @@ private struct KnownMailApp {
     let scheme: String
     /// Everything before the query string, e.g. `googlegmail:///co?`.
     let composePrefix: String
+    /// Query key for the recipient list — not `to` everywhere.
+    let recipientKey: String
+    /// Query key for the message body — not `body` everywhere.
+    let bodyKey: String
+
+    init(
+        id: String, name: String, scheme: String, composePrefix: String,
+        recipientKey: String = "to", bodyKey: String = "body"
+    ) {
+        self.id = id
+        self.name = name
+        self.scheme = scheme
+        self.composePrefix = composePrefix
+        self.recipientKey = recipientKey
+        self.bodyKey = bodyKey
+    }
 }
 
 private let knownMailApps: [KnownMailApp] = [
@@ -24,19 +40,26 @@ private let knownMailApps: [KnownMailApp] = [
         composePrefix: "ms-outlook://compose?"),
     KnownMailApp(
         id: "spark", name: "Spark", scheme: "readdle-spark",
-        composePrefix: "readdle-spark://compose?"),
+        composePrefix: "readdle-spark://compose?", recipientKey: "recipient"),
     KnownMailApp(
         id: "yahoo", name: "Yahoo Mail", scheme: "ymail",
         composePrefix: "ymail://mail/compose?"),
     KnownMailApp(
         id: "airmail", name: "Airmail", scheme: "airmail",
-        composePrefix: "airmail://compose?"),
+        composePrefix: "airmail://compose?", bodyKey: "plainBody"),
     KnownMailApp(
         id: "fastmail", name: "Fastmail", scheme: "fastmail",
         composePrefix: "fastmail://mail/compose?"),
     KnownMailApp(
         id: "proton", name: "Proton Mail", scheme: "protonmail",
         composePrefix: "protonmail://mailto:?"),
+    // Mail.ru publishes no compose scheme — this is the community-reported one
+    // and is UNVERIFIED. If the app is installed but never shows up in the
+    // picker, the scheme below is wrong; detection simply skips it, so a bad
+    // guess cannot break the other clients.
+    KnownMailApp(
+        id: "mailru", name: "Mail.ru", scheme: "mailru-mail",
+        composePrefix: "mailru-mail://compose?"),
 ]
 
 private let appleMailId = "apple_mail"
@@ -126,7 +149,10 @@ public class MailToPlugin: NSObject, FlutterPlugin {
         guard
             let url = URL(
                 string: prefix
-                    + query(subject: subject, body: body, to: to, cc: cc, bcc: bcc))
+                    + query(
+                        subject: subject, body: body, to: to, cc: cc, bcc: bcc,
+                        recipientKey: known?.recipientKey ?? "to",
+                        bodyKey: known?.bodyKey ?? "body"))
         else {
             result(false)
             return
@@ -138,14 +164,17 @@ public class MailToPlugin: NSObject, FlutterPlugin {
     }
 
     private func query(
-        subject: String, body: String, to: [String], cc: [String], bcc: [String]
+        subject: String, body: String, to: [String], cc: [String], bcc: [String],
+        recipientKey: String, bodyKey: String
     ) -> String {
         var parts: [String] = []
-        if !to.isEmpty { parts.append("to=\(encoded(to.joined(separator: ",")))") }
+        if !to.isEmpty {
+            parts.append("\(recipientKey)=\(encoded(to.joined(separator: ",")))")
+        }
         if !cc.isEmpty { parts.append("cc=\(encoded(cc.joined(separator: ",")))") }
         if !bcc.isEmpty { parts.append("bcc=\(encoded(bcc.joined(separator: ",")))") }
         parts.append("subject=\(encoded(subject))")
-        parts.append("body=\(encoded(body))")
+        parts.append("\(bodyKey)=\(encoded(body))")
         return parts.joined(separator: "&")
     }
 

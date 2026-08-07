@@ -23,6 +23,7 @@
 		<string>airmail</string>
 		<string>fastmail</string>
 		<string>protonmail</string>
+		<string>mailru-mail</string>
 	</array>
 	<key>CFBundleName</key>
 	<string>mail_to_example</string>
