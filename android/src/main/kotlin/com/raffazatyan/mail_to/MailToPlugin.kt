@@ -1,7 +1,6 @@
 package com.raffazatyan.mail_to
 
 import android.app.Activity
-import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -65,7 +64,11 @@ class MailToPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
 
     // region Detection
 
-    private data class MailApp(val id: String, val name: String)
+    private data class MailApp(
+        val id: String,
+        val name: String,
+        val icon: android.graphics.drawable.Drawable?,
+    )
 
     private fun installedApps(): List<MailApp> {
         val packageManager = context.packageManager
@@ -77,6 +80,7 @@ class MailToPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 MailApp(
                     id = resolveInfo.activityInfo.packageName,
                     name = resolveInfo.loadLabel(packageManager).toString(),
+                    icon = runCatching { resolveInfo.loadIcon(packageManager) }.getOrNull(),
                 )
             }
             .distinctBy { it.id }
@@ -127,10 +131,11 @@ class MailToPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     // region Picker
 
     /**
-     * Native [AlertDialog] — a centred list, matching the iOS `.alert` picker.
+     * Bottom sheet with each app's launcher icon and label — the Android
+     * convention for an app chooser, where iOS uses a centred alert.
      *
-     * With no mail app installed this puts up a one-button dialog and answers
-     * `null`, so callers need no branch of their own.
+     * With no mail app installed the same sheet shows the "no mail app"
+     * message, so callers need no branch of their own.
      */
     private fun pickApp(call: MethodCall, result: Result) {
         val currentActivity = activity
@@ -140,42 +145,21 @@ class MailToPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             return
         }
 
-        var answered = false
-        fun answer(value: Map<String, Any>?) {
-            if (answered) return
-            answered = true
-            result.success(value)
-        }
-
-        if (apps.isEmpty()) {
-            if (call.argument<Boolean>("showEmptyAlert") == false) {
-                answer(null)
-                return
-            }
-            AlertDialog.Builder(currentActivity)
-                .setTitle(call.argument<String>("title") ?: "Choose a mail app")
-                .setMessage(
-                    call.argument<String>("emptyMessage")
-                        ?: "No mail app is installed on this device."
-                )
-                .setPositiveButton(call.argument<String>("okLabel") ?: "OK") { _, _ ->
-                    answer(null)
-                }
-                .setOnCancelListener { answer(null) }
-                .show()
+        if (apps.isEmpty() && call.argument<Boolean>("showEmptyAlert") == false) {
+            result.success(null)
             return
         }
 
-        AlertDialog.Builder(currentActivity)
-            .setTitle(call.argument<String>("title") ?: "Choose a mail app")
-            .setItems(apps.map { it.name }.toTypedArray()) { _, which ->
-                answer(encode(apps[which]))
-            }
-            .setNegativeButton(call.argument<String>("cancelLabel") ?: "Cancel") { _, _ ->
-                answer(null)
-            }
-            .setOnCancelListener { answer(null) }
-            .show()
+        MailAppPickerSheet.show(
+            activity = currentActivity,
+            title = call.argument<String>("title") ?: "Choose a mail app",
+            rows = apps.map { MailAppRow(label = it.name, icon = it.icon) },
+            emptyMessage = call.argument<String>("emptyMessage")
+                ?: "No mail app is installed on this device.",
+            onPicked = { index ->
+                result.success(index?.let { encode(apps[it]) })
+            },
+        )
     }
 
     // endregion

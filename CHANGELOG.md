@@ -22,3 +22,13 @@
   `emptyMessage`, `okLabel` and `showEmptyAlert` parameters.
 * `pickAndCompose` no longer short-circuits on an empty list — it hands the
   case to the platform dialog.
+
+## 0.3.0
+
+* Redesigned the Android picker: a rounded bottom sheet with a drag handle and
+  each app's launcher icon, replacing the plain `AlertDialog` list. Follows the
+  system light/dark setting. Drawn programmatically — no Material dependency
+  and no requirement on the host activity's theme.
+* The "no mail app" state now uses the same sheet instead of a separate dialog.
+* `cancelLabel` is documented as iOS-only; the Android sheet dismisses by
+  scrim tap or back press.
