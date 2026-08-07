@@ -26,29 +26,28 @@ import android.widget.TextView
 internal data class MailAppRow(val label: String, val icon: Drawable?)
 
 /**
- * Bottom sheet listing the installed mail apps — icon plus label, one tap to
+ * Centred dialog listing the installed mail apps — icon plus label, one tap to
  * pick. With an empty list it renders the "no mail app" message instead.
  *
- * Built programmatically on a plain [Dialog] rather than `BottomSheetDialog` /
- * `MaterialAlertDialogBuilder`: those require the host activity to carry an
+ * Built programmatically on a plain [Dialog] rather than
+ * `MaterialAlertDialogBuilder`: that requires the host activity to carry an
  * AppCompat or Material theme, which a Flutter app is not required to have.
  * This looks the same regardless of the host theme and adds no dependency.
  */
-internal object MailAppPickerSheet {
+internal object MailAppPickerDialog {
 
     private const val CORNER_RADIUS_DP = 28f
-    private const val HANDLE_WIDTH_DP = 32f
-    private const val HANDLE_HEIGHT_DP = 4f
     private const val ICON_SIZE_DP = 40f
     private const val ROW_HEIGHT_DP = 64f
     private const val SIDE_PADDING_DP = 20f
+    private const val SCREEN_MARGIN_DP = 32f
+    private const val MAX_WIDTH_DP = 400f
     private const val MAX_HEIGHT_RATIO = 0.7f
 
     private class Palette(
         val surface: Int,
         val onSurface: Int,
         val onSurfaceVariant: Int,
-        val handle: Int,
         val ripple: Int,
     )
 
@@ -73,9 +72,8 @@ internal object MailAppPickerSheet {
         val dialog = Dialog(activity)
         val content = LinearLayout(activity).apply {
             orientation = LinearLayout.VERTICAL
-            background = sheetBackground(activity, palette)
-            setPadding(0, activity.dpInt(12f), 0, activity.dpInt(8f))
-            addView(handle(activity, palette))
+            background = dialogBackground(activity, palette)
+            setPadding(0, activity.dpInt(24f), 0, activity.dpInt(12f))
             addView(titleView(activity, palette, title))
             addView(
                 if (rows.isEmpty()) {
@@ -103,12 +101,9 @@ internal object MailAppPickerSheet {
             setOnDismissListener { answer(null) }
             window?.apply {
                 setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-                setLayout(
-                    WindowManager.LayoutParams.MATCH_PARENT,
-                    WindowManager.LayoutParams.WRAP_CONTENT,
-                )
-                setGravity(Gravity.BOTTOM)
-                setWindowAnimations(android.R.style.Animation_InputMethod)
+                setLayout(dialogWidth(activity), WindowManager.LayoutParams.WRAP_CONTENT)
+                setGravity(Gravity.CENTER)
+                setWindowAnimations(android.R.style.Animation_Dialog)
             }
             show()
         }
@@ -124,7 +119,6 @@ internal object MailAppPickerSheet {
                 surface = Color.parseColor("#1C1B1F"),
                 onSurface = Color.parseColor("#E6E1E5"),
                 onSurfaceVariant = Color.parseColor("#CAC4D0"),
-                handle = Color.parseColor("#49454F"),
                 ripple = Color.parseColor("#33FFFFFF"),
             )
         } else {
@@ -132,34 +126,24 @@ internal object MailAppPickerSheet {
                 surface = Color.parseColor("#FFFBFE"),
                 onSurface = Color.parseColor("#1C1B1F"),
                 onSurfaceVariant = Color.parseColor("#49454F"),
-                handle = Color.parseColor("#CAC4D0"),
                 ripple = Color.parseColor("#1F000000"),
             )
         }
     }
 
-    /** Rounded on top only — the sheet sits on the screen edge. */
-    private fun sheetBackground(activity: Activity, palette: Palette): Drawable =
+    private fun dialogBackground(activity: Activity, palette: Palette): Drawable =
         GradientDrawable().apply {
             setColor(palette.surface)
-            val radius = activity.dp(CORNER_RADIUS_DP)
-            cornerRadii = floatArrayOf(radius, radius, radius, radius, 0f, 0f, 0f, 0f)
+            cornerRadius = activity.dp(CORNER_RADIUS_DP)
         }
 
-    private fun handle(activity: Activity, palette: Palette): View =
-        View(activity).apply {
-            layoutParams = LinearLayout.LayoutParams(
-                activity.dpInt(HANDLE_WIDTH_DP),
-                activity.dpInt(HANDLE_HEIGHT_DP),
-            ).apply {
-                gravity = Gravity.CENTER_HORIZONTAL
-                bottomMargin = activity.dpInt(12f)
-            }
-            background = GradientDrawable().apply {
-                setColor(palette.handle)
-                cornerRadius = activity.dp(HANDLE_HEIGHT_DP / 2f)
-            }
-        }
+    /** Screen width minus margins, capped so it stays a dialog on tablets. */
+    private fun dialogWidth(activity: Activity): Int {
+        val available =
+            activity.resources.displayMetrics.widthPixels -
+                activity.dpInt(SCREEN_MARGIN_DP) * 2
+        return minOf(available, activity.dpInt(MAX_WIDTH_DP))
+    }
 
     private fun titleView(activity: Activity, palette: Palette, title: String): TextView =
         TextView(activity).apply {

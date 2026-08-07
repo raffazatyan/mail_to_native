@@ -32,3 +32,9 @@
 * The "no mail app" state now uses the same sheet instead of a separate dialog.
 * `cancelLabel` is documented as iOS-only; the Android sheet dismisses by
   scrim tap or back press.
+
+## 0.4.0
+
+* The Android picker is now a centred dialog instead of a bottom sheet,
+  matching the iOS `.alert` picker. Rounded on all corners, no drag handle,
+  width capped at 400dp. Icons, ripple rows and dark-mode support unchanged.

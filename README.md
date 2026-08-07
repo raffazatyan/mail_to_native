@@ -7,7 +7,7 @@ Most packages in this space open the mail app's *inbox*. `mail_to` opens a prefi
 | | iOS | Android |
 |---|---|---|
 | Detection | Known schemes probed with `canOpenURL` + `MFMailComposeViewController.canSendMail()` | Every `mailto:` handler, via `PackageManager` |
-| Picker | `UIAlertController` (`.alert`, centred) | Bottom sheet with each app's launcher icon |
+| Picker | `UIAlertController` (`.alert`, centred) | Centred dialog with each app's launcher icon |
 | Apple Mail | `MFMailComposeViewController` — an in-app sheet | n/a |
 | Others | Per-app compose deep link | Explicit `ACTION_SENDTO` intent |
 
@@ -118,8 +118,8 @@ None. The plugin's own manifest contributes the Android 11+ `<queries>` block.
 - `compose` resolves `true` when the composer opened (for Apple Mail: when the sheet closed without an error), `false` when nothing could be opened.
 - Long bodies: `mailto:` URLs are length-limited by the receiving app. Apple Mail's native composer has no such limit.
 - Apple Mail is reported as installed only when it has an account configured — simulators usually don't.
-- `cancelLabel` is iOS-only. The Android sheet is dismissed by tapping outside or pressing back, per platform convention, so it carries no cancel button.
-- The Android sheet is drawn programmatically (no `BottomSheetDialog`, no Material dependency) because a Flutter host activity is not guaranteed to carry an AppCompat/Material theme. It follows the system light/dark setting.
+- `cancelLabel` is iOS-only. The Android dialog is dismissed by tapping outside or pressing back, so it carries no cancel button.
+- The Android dialog is drawn programmatically (no Material dependency) because a Flutter host activity is not guaranteed to carry an AppCompat/Material theme. It follows the system light/dark setting.
 
 ## License
 

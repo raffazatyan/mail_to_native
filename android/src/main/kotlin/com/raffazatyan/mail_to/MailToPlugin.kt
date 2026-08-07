@@ -131,10 +131,10 @@ class MailToPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     // region Picker
 
     /**
-     * Bottom sheet with each app's launcher icon and label — the Android
-     * convention for an app chooser, where iOS uses a centred alert.
+     * Centred dialog with each app's launcher icon and label, mirroring the
+     * iOS `.alert` picker.
      *
-     * With no mail app installed the same sheet shows the "no mail app"
+     * With no mail app installed the same dialog shows the "no mail app"
      * message, so callers need no branch of their own.
      */
     private fun pickApp(call: MethodCall, result: Result) {
@@ -150,7 +150,7 @@ class MailToPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             return
         }
 
-        MailAppPickerSheet.show(
+        MailAppPickerDialog.show(
             activity = currentActivity,
             title = call.argument<String>("title") ?: "Choose a mail app",
             rows = apps.map { MailAppRow(label = it.name, icon = it.icon) },
