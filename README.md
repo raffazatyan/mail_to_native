@@ -72,8 +72,10 @@ await MailTo.pickAndCompose(message, shareMetadata: metadata);
 ```
 
 - `title` — bold line; defaults to the message subject.
-- `subtitle` — grey line under it. iOS renders it where a shared link shows its
-  domain. **iOS only.**
+- `subtitle` — grey line under it, where a shared link shows its domain.
+  Ignored unless `icon`/`image` is set: iOS treats an item carrying a subtitle
+  as a file and replaces the app icon with a generic document glyph.
+  **iOS only.**
 - `icon` — PNG/JPEG bytes for the thumbnail. Leave it unset: iOS then draws the
   host app's icon full-bleed. Supplied artwork gets aspect-fitted into a white
   tile, which looks inset by comparison. Falls back to `image`. **iOS only.**

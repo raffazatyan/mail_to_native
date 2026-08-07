@@ -17,7 +17,11 @@ class ShareMetadata {
   final String? title;
 
   /// Grey second line — iOS renders it where a shared link would show its
-  /// domain. iOS only.
+  /// domain.
+  ///
+  /// Ignored unless [icon] or [image] is supplied: iOS treats an item with a
+  /// subtitle as a file and swaps the tile for a generic document glyph, so
+  /// without artwork the host app's icon is the better trade. iOS only.
   final String? subtitle;
 
   /// PNG or JPEG bytes for the thumbnail.

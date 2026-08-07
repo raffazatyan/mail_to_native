@@ -77,3 +77,10 @@
   plugin no longer loads the host app's icon itself — with no `iconProvider`
   set, iOS draws that icon full-bleed on its own. Pass `ShareMetadata.icon`
   only to override it deliberately.
+
+## 0.7.2
+
+* Fixed the header showing a generic document glyph instead of the app icon.
+  `LPLinkMetadata.originalURL` — the only way to render a subtitle — makes iOS
+  treat the item as a file, so the subtitle is now skipped unless `icon` or
+  `image` supplies artwork to go with it.
