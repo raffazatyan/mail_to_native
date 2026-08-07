@@ -1,0 +1,14 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+  package="com.raffazatyan.mail_to">
+
+  <!--
+    Android 11+ package visibility. Merged into the host app's manifest, so
+    apps using this plugin do not have to declare anything themselves.
+  -->
+  <queries>
+    <intent>
+      <action android:name="android.intent.action.SENDTO" />
+      <data android:scheme="mailto" />
+    </intent>
+  </queries>
+</manifest>
