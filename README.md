@@ -74,8 +74,11 @@ await MailTo.pickAndCompose(message, shareMetadata: metadata);
 - `title` — bold line; defaults to the message subject.
 - `subtitle` — grey line under it. iOS renders it where a shared link shows its
   domain. **iOS only.**
-- `icon` — PNG/JPEG bytes; defaults to the host app's own icon, read from
-  `CFBundleIcons`. **iOS only.**
+- `icon` — PNG/JPEG bytes for the thumbnail; defaults to `image`, then to the
+  host app's own icon (read from `CFBundleIcons`). **iOS only.**
+- `image` — PNG bytes shared as a picture next to the text: a mail attachment,
+  a photo in messengers. On Android it is served through the plugin's own
+  `FileProvider`, so hosts need no manifest entry.
 
 Android has no subtitle or icon slot for a plain-text share, so only `title`
 applies there (as the chooser's `EXTRA_TITLE`).

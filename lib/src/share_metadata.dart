@@ -11,7 +11,7 @@ import 'package:flutter/foundation.dart';
 /// iOS-only.
 @immutable
 class ShareMetadata {
-  const ShareMetadata({this.title, this.subtitle, this.icon});
+  const ShareMetadata({this.title, this.subtitle, this.icon, this.image});
 
   /// Bold first line. Falls back to the message subject when null.
   final String? title;
@@ -20,9 +20,16 @@ class ShareMetadata {
   /// domain. iOS only.
   final String? subtitle;
 
-  /// PNG or JPEG bytes for the thumbnail. Defaults to the host app's icon.
-  /// iOS only.
+  /// PNG or JPEG bytes for the thumbnail. Defaults to the host app's icon,
+  /// or to [image] when one is given. iOS only.
   final Uint8List? icon;
+
+  /// PNG bytes shared as a picture alongside the text — a rendered card, a
+  /// screenshot, a chart.
+  ///
+  /// Recipients get an image: an attachment in mail, a photo in messengers.
+  /// Also becomes the sheet's preview thumbnail unless [icon] overrides it.
+  final Uint8List? image;
 
   @override
   bool operator ==(Object other) =>
@@ -30,14 +37,16 @@ class ShareMetadata {
       other is ShareMetadata &&
           other.title == title &&
           other.subtitle == subtitle &&
-          other.icon == icon;
+          other.icon == icon &&
+          other.image == image;
 
   @override
-  int get hashCode => Object.hash(title, subtitle, icon);
+  int get hashCode => Object.hash(title, subtitle, icon, image);
 
   Map<String, Object?> toMap() => {
     'title': title,
     'subtitle': subtitle,
     'icon': icon,
+    'image': image,
   };
 }

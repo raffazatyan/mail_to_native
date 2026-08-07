@@ -11,4 +11,21 @@
       <data android:scheme="mailto" />
     </intent>
   </queries>
+
+  <application>
+    <!--
+      Serves the rendered picture to the app the user picks in the chooser.
+      The authority is namespaced by the host's applicationId so two apps on
+      one device cannot collide.
+    -->
+    <provider
+      android:name="androidx.core.content.FileProvider"
+      android:authorities="${applicationId}.mail_to.fileprovider"
+      android:exported="false"
+      android:grantUriPermissions="true">
+      <meta-data
+        android:name="android.support.FILE_PROVIDER_PATHS"
+        android:resource="@xml/mail_to_file_paths" />
+    </provider>
+  </application>
 </manifest>

@@ -62,3 +62,11 @@
   `shareMetadata:`.
 * Android sets the chooser's `EXTRA_TITLE` from the same title; subtitle and
   icon are iOS-only.
+
+## 0.7.0
+
+* `ShareMetadata.image` — PNG bytes shared as a picture alongside the text.
+  iOS adds it as a second activity item (mail attachment, photo in messengers);
+  Android switches the chooser to `image/png` and serves the file through the
+  plugin's own `FileProvider`, so host apps need no manifest change.
+* The picture doubles as the sheet's preview thumbnail unless `icon` overrides.

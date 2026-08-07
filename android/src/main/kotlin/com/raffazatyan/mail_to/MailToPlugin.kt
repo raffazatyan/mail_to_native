@@ -181,16 +181,31 @@ class MailToPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
         @Suppress("UNCHECKED_CAST")
         val metadata = call.argument<Map<String, Any?>>("metadata")
 
+        val pictureUri = (metadata?.get("image") as? ByteArray)?.let(::writeSharedPicture)
+
         val intent = Intent(Intent.ACTION_SEND).apply {
-            type = "text/plain"
+            // A picture turns this into an image share; the text rides along as
+            // EXTRA_TEXT, which mail clients drop into the body.
+            type = if (pictureUri != null) "image/png" else "text/plain"
             putExtra(Intent.EXTRA_SUBJECT, subject)
             putExtra(Intent.EXTRA_TEXT, call.argument<String>("body") ?: "")
             // Chooser preview headline. Android has no equivalent of the iOS
-            // subtitle or icon slot for a plain text share.
+            // subtitle slot.
             putExtra(
                 Intent.EXTRA_TITLE,
                 (metadata?.get("title") as? String)?.takeIf { it.isNotEmpty() } ?: subject,
             )
+
+            if (pictureUri != null) {
+                putExtra(Intent.EXTRA_STREAM, pictureUri)
+                // Also feeds the chooser's preview thumbnail.
+                clipData = android.content.ClipData.newUri(
+                    context.contentResolver,
+                    subject,
+                    pictureUri,
+                )
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
         }
 
         val launcher = activity ?: context
@@ -204,6 +219,26 @@ class MailToPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
         } catch (e: android.content.ActivityNotFoundException) {
             result.success(false)
         }
+    }
+
+    /**
+     * Writes the picture into the cache directory covered by this plugin's
+     * `FileProvider`, and returns a URI the chosen app is allowed to read.
+     *
+     * Returns `null` if the write fails — the share then falls back to text.
+     */
+    private fun writeSharedPicture(bytes: ByteArray): android.net.Uri? = try {
+        val directory = java.io.File(context.cacheDir, "mail_to").apply { mkdirs() }
+        val file = java.io.File(directory, "shared.png")
+        file.writeBytes(bytes)
+
+        androidx.core.content.FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.mail_to.fileprovider",
+            file,
+        )
+    } catch (e: Exception) {
+        null
     }
 
     private companion object {

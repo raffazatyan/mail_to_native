@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Shared pictures are written here; nothing else is exposed. -->
+    <cache-path name="mail_to_shared" path="mail_to/" />
+</paths>

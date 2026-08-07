@@ -112,6 +112,7 @@ public class MailToPlugin: NSObject, FlutterPlugin {
                 headerTitle: metadata?["title"] as? String,
                 headerSubtitle: metadata?["subtitle"] as? String,
                 headerIcon: (metadata?["icon"] as? FlutterStandardTypedData)?.data,
+                image: (metadata?["image"] as? FlutterStandardTypedData)?.data,
                 result: result
             )
 
@@ -309,14 +310,16 @@ public class MailToPlugin: NSObject, FlutterPlugin {
 
     private func share(
         subject: String, body: String, headerTitle: String?, headerSubtitle: String?,
-        headerIcon: Data?, result: @escaping FlutterResult
+        headerIcon: Data?, image: Data?, result: @escaping FlutterResult
     ) {
         guard let presenter = Self.topViewController() else {
             result(false)
             return
         }
 
-        let icon = headerIcon.flatMap(UIImage.init(data:)) ?? Self.appIcon()
+        let picture = image.flatMap(UIImage.init(data:))
+        // The rendered picture makes a better thumbnail than the app icon.
+        let icon = headerIcon.flatMap(UIImage.init(data:)) ?? picture ?? Self.appIcon()
         let source = SubjectActivityItemSource(
             subject: subject,
             body: body,
@@ -324,8 +327,16 @@ public class MailToPlugin: NSObject, FlutterPlugin {
             headerSubtitle: headerSubtitle,
             headerIcon: icon
         )
+
+        // Text first so it stays the mail body and the metadata source; the
+        // picture rides along as an attachment / photo.
+        var items: [Any] = [source]
+        if let picture {
+            items.append(picture)
+        }
+
         let controller = UIActivityViewController(
-            activityItems: [source], applicationActivities: nil)
+            activityItems: items, applicationActivities: nil)
 
         // iPad presents this as a popover and crashes without an anchor.
         if let popover = controller.popoverPresentationController {
