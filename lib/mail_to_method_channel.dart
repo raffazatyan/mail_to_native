@@ -37,7 +37,9 @@ class MethodChannelMailTo extends MailToPlatform {
     String? cancelLabel,
     String? emptyMessage,
     String? okLabel,
+    String? otherAppsLabel,
     bool showEmptyAlert = true,
+    bool showOtherApps = true,
   }) async {
     final picked = await methodChannel.invokeMapMethod<Object?, Object?>(
       'pickApp',
@@ -46,10 +48,22 @@ class MethodChannelMailTo extends MailToPlatform {
         'cancelLabel': cancelLabel,
         'emptyMessage': emptyMessage,
         'okLabel': okLabel,
+        'otherAppsLabel': otherAppsLabel,
         'showEmptyAlert': showEmptyAlert,
+        'showOtherApps': showOtherApps,
       },
     );
 
     return picked == null ? null : MailApp.fromMap(picked);
+  }
+
+  @override
+  Future<bool> share(MailMessage message) async {
+    final isShared = await methodChannel.invokeMethod<bool>(
+      'share',
+      message.toMap(),
+    );
+
+    return isShared ?? false;
   }
 }

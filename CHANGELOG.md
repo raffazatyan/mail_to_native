@@ -38,3 +38,15 @@
 * The Android picker is now a centred dialog instead of a bottom sheet,
   matching the iOS `.alert` picker. Rounded on all corners, no drag handle,
   width capped at 400dp. Icons, ripple rows and dark-mode support unchanged.
+
+## 0.5.0
+
+* The picker no longer auto-selects when a single mail app is installed — the
+  dialog always appears, so the new "other apps" entry stays reachable.
+* Added an "other apps" entry to the picker and to the "no mail app" dialog. It
+  opens the system share sheet: `UIActivityViewController` on iOS (subject
+  carried through a `UIActivityItemSource`), an `ACTION_SEND` chooser on
+  Android. New `otherAppsLabel` and `showOtherApps` parameters.
+* Added `MailTo.share(message)` for calling the share sheet directly, and
+  `MailApp.isOther` / `MailApp.otherAppsId` to identify the entry.
+* The Android "no mail app" dialog now has proper OK / "other apps" buttons.

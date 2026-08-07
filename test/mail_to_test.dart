@@ -12,6 +12,7 @@ class FakeMailToPlatform extends MailToPlatform with MockPlatformInterfaceMixin 
   int pickAppCalls = 0;
   MailApp? composedWith;
   MailMessage? composedMessage;
+  MailMessage? sharedMessage;
 
   @override
   Future<List<MailApp>> installedApps() async => apps;
@@ -24,12 +25,20 @@ class FakeMailToPlatform extends MailToPlatform with MockPlatformInterfaceMixin 
   }
 
   @override
+  Future<bool> share(MailMessage message) async {
+    sharedMessage = message;
+    return true;
+  }
+
+  @override
   Future<MailApp?> pickApp({
     String? title,
     String? cancelLabel,
     String? emptyMessage,
     String? okLabel,
+    String? otherAppsLabel,
     bool showEmptyAlert = true,
+    bool showOtherApps = true,
   }) async {
     pickAppCalls++;
     return pick;
@@ -59,15 +68,34 @@ void main() {
       expect(await MailTo.installedApps(), [appleMail, gmail]);
     });
 
-    test('should compose without a dialog when one app is installed', () async {
-      platform.apps = [gmail];
+    test('should still show the dialog when only one app is installed', () async {
+      platform
+        ..apps = [gmail]
+        ..pick = gmail;
 
       final isComposed = await MailTo.pickAndCompose(message);
 
       expect(isComposed, isTrue);
-      expect(platform.pickAppCalls, 0);
+      // No auto-select: the user must be able to reach "other apps".
+      expect(platform.pickAppCalls, 1);
       expect(platform.composedWith, gmail);
       expect(platform.composedMessage, message);
+    });
+
+    test('should share instead of composing when "other apps" is picked', () async {
+      platform
+        ..apps = [gmail]
+        ..pick = const MailApp(
+          id: MailApp.otherAppsId,
+          name: 'Other apps',
+          isOther: true,
+        );
+
+      final isShared = await MailTo.pickAndCompose(message);
+
+      expect(isShared, isTrue);
+      expect(platform.sharedMessage, message);
+      expect(platform.composedWith, isNull);
     });
 
     test('should ask for a pick when several apps are installed', () async {

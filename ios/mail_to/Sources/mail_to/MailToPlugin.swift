@@ -93,7 +93,20 @@ public class MailToPlugin: NSObject, FlutterPlugin {
                 cancelLabel: args["cancelLabel"] as? String,
                 emptyMessage: args["emptyMessage"] as? String,
                 okLabel: args["okLabel"] as? String,
+                otherAppsLabel: args["otherAppsLabel"] as? String,
                 showEmptyAlert: args["showEmptyAlert"] as? Bool ?? true,
+                showOtherApps: args["showOtherApps"] as? Bool ?? true,
+                result: result
+            )
+
+        case "share":
+            guard let args = call.arguments as? [String: Any] else {
+                result(invalidArguments())
+                return
+            }
+            share(
+                subject: args["subject"] as? String ?? "",
+                body: args["body"] as? String ?? "",
                 result: result
             )
 
@@ -224,7 +237,8 @@ public class MailToPlugin: NSObject, FlutterPlugin {
     /// `nil`, so callers need no branch of their own.
     private func pickApp(
         title: String?, cancelLabel: String?, emptyMessage: String?, okLabel: String?,
-        showEmptyAlert: Bool, result: @escaping FlutterResult
+        otherAppsLabel: String?, showEmptyAlert: Bool, showOtherApps: Bool,
+        result: @escaping FlutterResult
     ) {
         let apps = installedApps()
         guard let presenter = Self.topViewController() else {
@@ -232,26 +246,10 @@ public class MailToPlugin: NSObject, FlutterPlugin {
             return
         }
 
-        if apps.isEmpty {
-            guard showEmptyAlert else {
-                result(nil)
-                return
-            }
-            let alert = UIAlertController(
-                title: title ?? "Choose a mail app",
-                message: emptyMessage ?? "No mail app is installed on this device.",
-                preferredStyle: .alert
-            )
-            alert.addAction(
-                UIAlertAction(title: okLabel ?? "OK", style: .default) { _ in
-                    result(nil)
-                })
-            presenter.present(alert, animated: true)
+        if apps.isEmpty && !showEmptyAlert {
+            result(nil)
             return
         }
-
-        let alert = UIAlertController(
-            title: title ?? "Choose a mail app", message: nil, preferredStyle: .alert)
 
         var answered = false
         let answer: ([String: Any]?) -> Void = { value in
@@ -260,6 +258,14 @@ public class MailToPlugin: NSObject, FlutterPlugin {
             result(value)
         }
 
+        let alert = UIAlertController(
+            title: title ?? "Choose a mail app",
+            // The empty state keeps the same alert, with the reason as its body.
+            message: apps.isEmpty
+                ? (emptyMessage ?? "No mail app is installed on this device.") : nil,
+            preferredStyle: .alert
+        )
+
         for app in apps {
             alert.addAction(
                 UIAlertAction(title: app.name, style: .default) { [weak self] _ in
@@ -267,12 +273,57 @@ public class MailToPlugin: NSObject, FlutterPlugin {
                     answer(self.encode(app))
                 })
         }
+
+        if showOtherApps {
+            alert.addAction(
+                UIAlertAction(title: otherAppsLabel ?? "Other apps…", style: .default) { _ in
+                    answer(Self.otherAppsEntry)
+                })
+        }
+
+        // Empty state closes with OK; the populated one with Cancel.
         alert.addAction(
-            UIAlertAction(title: cancelLabel ?? "Cancel", style: .cancel) { _ in
+            UIAlertAction(
+                title: apps.isEmpty ? (okLabel ?? "OK") : (cancelLabel ?? "Cancel"),
+                style: .cancel
+            ) { _ in
                 answer(nil)
             })
 
         presenter.present(alert, animated: true)
+    }
+
+    private static let otherAppsEntry: [String: Any] = [
+        "id": "__other_apps__",
+        "name": "Other apps",
+        "usesNativeComposer": false,
+        "isOther": true,
+    ]
+
+    // MARK: - Share sheet
+
+    private func share(subject: String, body: String, result: @escaping FlutterResult) {
+        guard let presenter = Self.topViewController() else {
+            result(false)
+            return
+        }
+
+        let source = SubjectActivityItemSource(subject: subject, body: body)
+        let controller = UIActivityViewController(
+            activityItems: [source], applicationActivities: nil)
+
+        // iPad presents this as a popover and crashes without an anchor.
+        if let popover = controller.popoverPresentationController {
+            popover.sourceView = presenter.view
+            popover.sourceRect = CGRect(
+                x: presenter.view.bounds.midX, y: presenter.view.bounds.midY,
+                width: 0, height: 0)
+            popover.permittedArrowDirections = []
+        }
+
+        presenter.present(controller, animated: true) {
+            result(true)
+        }
     }
 
     // MARK: - Helpers
@@ -296,6 +347,38 @@ public class MailToPlugin: NSObject, FlutterPlugin {
             top = presented
         }
         return top
+    }
+}
+
+/// Carries the subject into the share sheet.
+///
+/// A plain `String` activity item has no subject, so mail apps opened from the
+/// sheet would start with an empty subject line.
+private final class SubjectActivityItemSource: NSObject, UIActivityItemSource {
+    private let subject: String
+    private let body: String
+
+    init(subject: String, body: String) {
+        self.subject = subject
+        self.body = body
+    }
+
+    func activityViewControllerPlaceholderItem(_ controller: UIActivityViewController) -> Any {
+        body
+    }
+
+    func activityViewController(
+        _ controller: UIActivityViewController,
+        itemForActivityType activityType: UIActivity.ActivityType?
+    ) -> Any? {
+        body
+    }
+
+    func activityViewController(
+        _ controller: UIActivityViewController,
+        subjectForActivityType activityType: UIActivity.ActivityType?
+    ) -> String {
+        subject
     }
 }
 

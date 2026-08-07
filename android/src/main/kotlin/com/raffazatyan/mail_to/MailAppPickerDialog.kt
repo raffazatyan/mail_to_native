@@ -48,25 +48,37 @@ internal object MailAppPickerDialog {
         val surface: Int,
         val onSurface: Int,
         val onSurfaceVariant: Int,
+        val accent: Int,
         val ripple: Int,
     )
 
     /**
-     * @param onPicked the tapped index, or `null` when dismissed. Called once.
+     * @param otherAppsLabel entry that opens the system share sheet; `null`
+     *   hides it.
+     * @param onPicked the tapped index, or `null` when dismissed. Exactly one
+     *   of [onPicked] / [onOtherApps] fires, once.
      */
     fun show(
         activity: Activity,
         title: String,
         rows: List<MailAppRow>,
         emptyMessage: String,
+        okLabel: String,
+        otherAppsLabel: String?,
         onPicked: (Int?) -> Unit,
+        onOtherApps: () -> Unit,
     ) {
         val palette = palette(activity)
         var answered = false
-        fun answer(index: Int?) {
+        fun answerPick(index: Int?) {
             if (answered) return
             answered = true
             onPicked(index)
+        }
+        fun answerOther() {
+            if (answered) return
+            answered = true
+            onOtherApps()
         }
 
         val dialog = Dialog(activity)
@@ -80,10 +92,25 @@ internal object MailAppPickerDialog {
                     emptyView(activity, palette, emptyMessage)
                 } else {
                     appList(activity, palette, rows) { index ->
-                        answer(index)
+                        answerPick(index)
                         dialog.dismiss()
                     }
                 },
+            )
+            addView(
+                buttonRow(
+                    activity = activity,
+                    palette = palette,
+                    // The empty state needs an explicit way out; the populated
+                    // one closes by scrim tap or back press.
+                    closeLabel = okLabel.takeIf { rows.isEmpty() },
+                    otherAppsLabel = otherAppsLabel,
+                    onClose = { dialog.dismiss() },
+                    onOtherApps = {
+                        answerOther()
+                        dialog.dismiss()
+                    },
+                ),
             )
         }
 
@@ -97,8 +124,9 @@ internal object MailAppPickerDialog {
                 ),
             )
             setCanceledOnTouchOutside(true)
-            // Covers every close path — back press, scrim tap, row tap.
-            setOnDismissListener { answer(null) }
+            // Covers every close path — back press, scrim tap, OK. Row and
+            // "other apps" taps have already answered by the time this runs.
+            setOnDismissListener { answerPick(null) }
             window?.apply {
                 setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
                 setLayout(dialogWidth(activity), WindowManager.LayoutParams.WRAP_CONTENT)
@@ -119,6 +147,7 @@ internal object MailAppPickerDialog {
                 surface = Color.parseColor("#1C1B1F"),
                 onSurface = Color.parseColor("#E6E1E5"),
                 onSurfaceVariant = Color.parseColor("#CAC4D0"),
+                accent = Color.parseColor("#D0BCFF"),
                 ripple = Color.parseColor("#33FFFFFF"),
             )
         } else {
@@ -126,6 +155,7 @@ internal object MailAppPickerDialog {
                 surface = Color.parseColor("#FFFBFE"),
                 onSurface = Color.parseColor("#1C1B1F"),
                 onSurfaceVariant = Color.parseColor("#49454F"),
+                accent = Color.parseColor("#6750A4"),
                 ripple = Color.parseColor("#1F000000"),
             )
         }
@@ -204,6 +234,71 @@ internal object MailAppPickerDialog {
             isVerticalScrollBarEnabled = false
             addView(list)
         }
+    }
+
+    /**
+     * Trailing text buttons: "other apps" (always, when enabled) and a close
+     * button that only the empty state needs.
+     */
+    private fun buttonRow(
+        activity: Activity,
+        palette: Palette,
+        closeLabel: String?,
+        otherAppsLabel: String?,
+        onClose: () -> Unit,
+        onOtherApps: () -> Unit,
+    ): View = LinearLayout(activity).apply {
+        orientation = LinearLayout.HORIZONTAL
+        gravity = Gravity.END or Gravity.CENTER_VERTICAL
+        setPadding(
+            activity.dpInt(SIDE_PADDING_DP / 2),
+            activity.dpInt(8f),
+            activity.dpInt(SIDE_PADDING_DP / 2),
+            0,
+        )
+
+        if (otherAppsLabel != null) {
+            addView(textButton(activity, palette, otherAppsLabel, onOtherApps))
+        }
+        if (closeLabel != null) {
+            addView(textButton(activity, palette, closeLabel, onClose))
+        }
+        // Nothing to show — keep the dialog from growing by an empty strip.
+        if (childCount == 0) {
+            visibility = View.GONE
+        }
+    }
+
+    private fun textButton(
+        activity: Activity,
+        palette: Palette,
+        label: String,
+        onTap: () -> Unit,
+    ): View = TextView(activity).apply {
+        text = label
+        setTextColor(palette.accent)
+        setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
+        typeface = Typeface.DEFAULT_BOLD
+        isAllCaps = false
+        isClickable = true
+        isFocusable = true
+        gravity = Gravity.CENTER
+        minHeight = activity.dpInt(44f)
+        setPadding(
+            activity.dpInt(14f),
+            activity.dpInt(10f),
+            activity.dpInt(14f),
+            activity.dpInt(10f),
+        )
+        background = RippleDrawable(
+            ColorStateList.valueOf(palette.ripple),
+            null,
+            GradientDrawable().apply {
+                setColor(Color.WHITE)
+                cornerRadius = activity.dp(20f)
+            },
+        )
+        setOnClickListener { onTap() }
     }
 
     private fun row(activity: Activity, palette: Palette, row: MailAppRow): View =

@@ -58,6 +58,7 @@ class MailToPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             "installedApps" -> result.success(installedApps().map(::encode))
             "compose" -> compose(call, result)
             "pickApp" -> pickApp(call, result)
+            "share" -> share(call, result)
             else -> result.notImplemented()
         }
     }
@@ -156,9 +157,51 @@ class MailToPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             rows = apps.map { MailAppRow(label = it.name, icon = it.icon) },
             emptyMessage = call.argument<String>("emptyMessage")
                 ?: "No mail app is installed on this device.",
+            okLabel = call.argument<String>("okLabel") ?: "OK",
+            // null hides the entry entirely.
+            otherAppsLabel = if (call.argument<Boolean>("showOtherApps") != false) {
+                call.argument<String>("otherAppsLabel") ?: "Other apps…"
+            } else {
+                null
+            },
             onPicked = { index ->
                 result.success(index?.let { encode(apps[it]) })
             },
+            onOtherApps = { result.success(OTHER_APPS_ENTRY) },
+        )
+    }
+
+    // endregion
+
+    // region Share sheet
+
+    /** System chooser over `ACTION_SEND` — every app that takes text. */
+    private fun share(call: MethodCall, result: Result) {
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_SUBJECT, call.argument<String>("subject") ?: "")
+            putExtra(Intent.EXTRA_TEXT, call.argument<String>("body") ?: "")
+        }
+
+        val launcher = activity ?: context
+        val chooser = Intent.createChooser(intent, null).apply {
+            if (launcher === context) addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+
+        return try {
+            launcher.startActivity(chooser)
+            result.success(true)
+        } catch (e: android.content.ActivityNotFoundException) {
+            result.success(false)
+        }
+    }
+
+    private companion object {
+        val OTHER_APPS_ENTRY = mapOf(
+            "id" to "__other_apps__",
+            "name" to "Other apps",
+            "usesNativeComposer" to false,
+            "isOther" to true,
         )
     }
 

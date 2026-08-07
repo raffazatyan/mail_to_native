@@ -37,8 +37,15 @@ abstract class MailToPlatform extends PlatformInterface {
     String? cancelLabel,
     String? emptyMessage,
     String? okLabel,
+    String? otherAppsLabel,
     bool showEmptyAlert = true,
+    bool showOtherApps = true,
   }) {
     throw UnimplementedError('pickApp() has not been implemented.');
+  }
+
+  /// Opens the system share sheet with [message].
+  Future<bool> share(MailMessage message) {
+    throw UnimplementedError('share() has not been implemented.');
   }
 }

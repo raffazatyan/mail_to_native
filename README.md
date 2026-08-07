@@ -10,6 +10,7 @@ Most packages in this space open the mail app's *inbox*. `mail_to` opens a prefi
 | Picker | `UIAlertController` (`.alert`, centred) | Centred dialog with each app's launcher icon |
 | Apple Mail | `MFMailComposeViewController` — an in-app sheet | n/a |
 | Others | Per-app compose deep link | Explicit `ACTION_SENDTO` intent |
+| "Other apps" | `UIActivityViewController` | `ACTION_SEND` chooser |
 
 ## Why Apple Mail is special
 
@@ -30,8 +31,10 @@ const message = MailMessage(
 await MailTo.pickAndCompose(message);
 ```
 
-No mail app installed? `pickApp` / `pickAndCompose` put up a native one-button
-alert and return `null` / `false` — you write no empty-list branch:
+The dialog always appears, even with one app installed, and carries an
+"other apps" entry that opens the system share sheet. No mail app at all? The
+same dialog shows [emptyMessage] with an OK button — you write no empty-list
+branch:
 
 ```dart
 await MailTo.pickAndCompose(
@@ -40,10 +43,18 @@ await MailTo.pickAndCompose(
   cancelLabel: 'Cancel',
   emptyMessage: 'No mail app is installed on this device.',
   okLabel: 'OK',
+  otherAppsLabel: 'Other apps…',
 );
 ```
 
-Pass `showEmptyAlert: false` to suppress that alert and just get `null` back.
+Pass `showEmptyAlert: false` to suppress the empty dialog and just get `null`
+back, or `showOtherApps: false` to drop the share entry.
+
+The share sheet is also available on its own:
+
+```dart
+await MailTo.share(message);   // every app that takes text, not just mail
+```
 
 Driving the list yourself:
 
@@ -118,6 +129,7 @@ None. The plugin's own manifest contributes the Android 11+ `<queries>` block.
 - `compose` resolves `true` when the composer opened (for Apple Mail: when the sheet closed without an error), `false` when nothing could be opened.
 - Long bodies: `mailto:` URLs are length-limited by the receiving app. Apple Mail's native composer has no such limit.
 - Apple Mail is reported as installed only when it has an account configured — simulators usually don't.
+- `MailApp.isOther` marks the "other apps" pick returned by `pickApp`; hand it to `share`. `pickAndCompose` does that for you.
 - `cancelLabel` is iOS-only. The Android dialog is dismissed by tapping outside or pressing back, so it carries no cancel button.
 - The Android dialog is drawn programmatically (no Material dependency) because a Flutter host activity is not guaranteed to carry an AppCompat/Material theme. It follows the system light/dark setting.
 

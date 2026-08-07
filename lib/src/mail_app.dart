@@ -12,19 +12,28 @@ class MailApp {
     required this.id,
     required this.name,
     this.usesNativeComposer = false,
+    this.isOther = false,
   });
 
   factory MailApp.fromMap(Map<Object?, Object?> map) => MailApp(
     id: map['id'] as String? ?? '',
     name: map['name'] as String? ?? '',
     usesNativeComposer: map['usesNativeComposer'] as bool? ?? false,
+    isOther: map['isOther'] as bool? ?? false,
   );
+
+  /// [id] of the "other apps" entry — the system share sheet, not a mail app.
+  static const otherAppsId = '__other_apps__';
 
   /// Platform-specific identifier — slug on iOS, package name on Android.
   final String id;
 
   /// Display name, e.g. `Gmail`. Localized by the OS on Android.
   final String name;
+
+  /// Whether this entry is the "other apps" one, which opens the system share
+  /// sheet instead of a mail app. Handled for you by `MailTo.pickAndCompose`.
+  final bool isOther;
 
   /// Whether composing opens an in-app sheet instead of switching apps.
   ///
@@ -39,10 +48,11 @@ class MailApp {
       other is MailApp &&
           other.id == id &&
           other.name == name &&
-          other.usesNativeComposer == usesNativeComposer;
+          other.usesNativeComposer == usesNativeComposer &&
+          other.isOther == isOther;
 
   @override
-  int get hashCode => Object.hash(id, name, usesNativeComposer);
+  int get hashCode => Object.hash(id, name, usesNativeComposer, isOther);
 
   @override
   String toString() => 'MailApp(id: $id, name: $name)';
