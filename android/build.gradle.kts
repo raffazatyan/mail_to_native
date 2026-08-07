@@ -23,6 +23,10 @@ allprojects {
 
 plugins {
     id("com.android.library")
+    // Without this the Kotlin sources under src/main/kotlin are never compiled
+    // and the host app's GeneratedPluginRegistrant fails with
+    // "cannot find symbol: class MailToPlugin".
+    id("org.jetbrains.kotlin.android")
 }
 
 android {
