@@ -177,10 +177,20 @@ class MailToPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
 
     /** System chooser over `ACTION_SEND` — every app that takes text. */
     private fun share(call: MethodCall, result: Result) {
+        val subject = call.argument<String>("subject") ?: ""
+        @Suppress("UNCHECKED_CAST")
+        val metadata = call.argument<Map<String, Any?>>("metadata")
+
         val intent = Intent(Intent.ACTION_SEND).apply {
             type = "text/plain"
-            putExtra(Intent.EXTRA_SUBJECT, call.argument<String>("subject") ?: "")
+            putExtra(Intent.EXTRA_SUBJECT, subject)
             putExtra(Intent.EXTRA_TEXT, call.argument<String>("body") ?: "")
+            // Chooser preview headline. Android has no equivalent of the iOS
+            // subtitle or icon slot for a plain text share.
+            putExtra(
+                Intent.EXTRA_TITLE,
+                (metadata?.get("title") as? String)?.takeIf { it.isNotEmpty() } ?: subject,
+            )
         }
 
         val launcher = activity ?: context

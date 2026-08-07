@@ -56,6 +56,30 @@ The share sheet is also available on its own:
 await MailTo.share(message);   // every app that takes text, not just mail
 ```
 
+### Share-sheet header
+
+Without metadata iOS shows a bare app icon and no title, because a plain text
+item carries no preview. Pass [ShareMetadata] to fill the header strip:
+
+```dart
+await MailTo.share(
+  message,
+  metadata: const ShareMetadata(title: 'Meeting notes', subtitle: 'krisp.ai'),
+);
+
+// pickAndCompose forwards it when the user chooses "other apps"
+await MailTo.pickAndCompose(message, shareMetadata: metadata);
+```
+
+- `title` — bold line; defaults to the message subject.
+- `subtitle` — grey line under it. iOS renders it where a shared link shows its
+  domain. **iOS only.**
+- `icon` — PNG/JPEG bytes; defaults to the host app's own icon, read from
+  `CFBundleIcons`. **iOS only.**
+
+Android has no subtitle or icon slot for a plain-text share, so only `title`
+applies there (as the chooser's `EXTRA_TITLE`).
+
 Driving the list yourself:
 
 ```dart

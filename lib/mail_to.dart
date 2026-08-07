@@ -1,9 +1,11 @@
 import 'mail_to_platform_interface.dart';
 import 'src/mail_app.dart';
 import 'src/mail_message.dart';
+import 'src/share_metadata.dart';
 
 export 'src/mail_app.dart';
 export 'src/mail_message.dart';
+export 'src/share_metadata.dart';
 
 /// Opens a mail app's compose screen with the message prefilled.
 ///
@@ -39,9 +41,10 @@ abstract final class MailTo {
   /// text, not just mail clients.
   ///
   /// `UIActivityViewController` on iOS, `ACTION_SEND` chooser on Android.
+  /// Pass [metadata] to fill the sheet's header — icon, title, subtitle.
   /// Returns `false` when the sheet could not be presented.
-  static Future<bool> share(MailMessage message) =>
-      MailToPlatform.instance.share(message);
+  static Future<bool> share(MailMessage message, {ShareMetadata? metadata}) =>
+      MailToPlatform.instance.share(message, metadata: metadata);
 
   /// Shows the OS dialog listing installed mail apps.
   ///
@@ -77,8 +80,9 @@ abstract final class MailTo {
   /// Picks a mail app and composes in one step.
   ///
   /// The dialog is always shown — no auto-select on a single app — and
-  /// "other apps" routes to the system share sheet. Returns `false` when
-  /// nothing was composed or shared.
+  /// "other apps" routes to the system share sheet, whose header is filled
+  /// from [shareMetadata]. Returns `false` when nothing was composed or
+  /// shared.
   static Future<bool> pickAndCompose(
     MailMessage message, {
     String? dialogTitle,
@@ -88,6 +92,7 @@ abstract final class MailTo {
     String? otherAppsLabel,
     bool showEmptyAlert = true,
     bool showOtherApps = true,
+    ShareMetadata? shareMetadata,
   }) async {
     final app = await pickApp(
       title: dialogTitle,
@@ -102,6 +107,8 @@ abstract final class MailTo {
       return false;
     }
 
-    return app.isOther ? share(message) : compose(message, app: app);
+    return app.isOther
+        ? share(message, metadata: shareMetadata)
+        : compose(message, app: app);
   }
 }

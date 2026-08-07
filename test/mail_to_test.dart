@@ -13,6 +13,7 @@ class FakeMailToPlatform extends MailToPlatform with MockPlatformInterfaceMixin 
   MailApp? composedWith;
   MailMessage? composedMessage;
   MailMessage? sharedMessage;
+  ShareMetadata? sharedMetadata;
 
   @override
   Future<List<MailApp>> installedApps() async => apps;
@@ -25,8 +26,9 @@ class FakeMailToPlatform extends MailToPlatform with MockPlatformInterfaceMixin 
   }
 
   @override
-  Future<bool> share(MailMessage message) async {
+  Future<bool> share(MailMessage message, {ShareMetadata? metadata}) async {
     sharedMessage = message;
+    sharedMetadata = metadata;
     return true;
   }
 
@@ -96,6 +98,21 @@ void main() {
       expect(isShared, isTrue);
       expect(platform.sharedMessage, message);
       expect(platform.composedWith, isNull);
+    });
+
+    test('should forward the share-sheet header metadata', () async {
+      const metadata = ShareMetadata(title: 'Krisp AI Chat', subtitle: 'krisp.ai');
+      platform
+        ..apps = [gmail]
+        ..pick = const MailApp(
+          id: MailApp.otherAppsId,
+          name: 'Other apps',
+          isOther: true,
+        );
+
+      await MailTo.pickAndCompose(message, shareMetadata: metadata);
+
+      expect(platform.sharedMetadata, metadata);
     });
 
     test('should ask for a pick when several apps are installed', () async {

@@ -50,3 +50,15 @@
 * Added `MailTo.share(message)` for calling the share sheet directly, and
   `MailApp.isOther` / `MailApp.otherAppsId` to identify the entry.
 * The Android "no mail app" dialog now has proper OK / "other apps" buttons.
+
+## 0.6.0
+
+* Added `ShareMetadata` — fills the share sheet's header via `LPLinkMetadata`
+  on iOS: icon, bold title, grey subtitle. Without it iOS shows a bare app icon
+  and no title, since a plain text item carries no preview.
+* The header icon defaults to the host app's own icon, read from
+  `CFBundleIcons`; override it with PNG/JPEG bytes.
+* `MailTo.share` takes `metadata:`, `MailTo.pickAndCompose` takes
+  `shareMetadata:`.
+* Android sets the chooser's `EXTRA_TITLE` from the same title; subtitle and
+  icon are iOS-only.

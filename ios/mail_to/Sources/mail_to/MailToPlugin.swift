@@ -1,4 +1,5 @@
 import Flutter
+import LinkPresentation
 import MessageUI
 import UIKit
 
@@ -104,9 +105,13 @@ public class MailToPlugin: NSObject, FlutterPlugin {
                 result(invalidArguments())
                 return
             }
+            let metadata = args["metadata"] as? [String: Any]
             share(
                 subject: args["subject"] as? String ?? "",
                 body: args["body"] as? String ?? "",
+                headerTitle: metadata?["title"] as? String,
+                headerSubtitle: metadata?["subtitle"] as? String,
+                headerIcon: (metadata?["icon"] as? FlutterStandardTypedData)?.data,
                 result: result
             )
 
@@ -302,13 +307,23 @@ public class MailToPlugin: NSObject, FlutterPlugin {
 
     // MARK: - Share sheet
 
-    private func share(subject: String, body: String, result: @escaping FlutterResult) {
+    private func share(
+        subject: String, body: String, headerTitle: String?, headerSubtitle: String?,
+        headerIcon: Data?, result: @escaping FlutterResult
+    ) {
         guard let presenter = Self.topViewController() else {
             result(false)
             return
         }
 
-        let source = SubjectActivityItemSource(subject: subject, body: body)
+        let icon = headerIcon.flatMap(UIImage.init(data:)) ?? Self.appIcon()
+        let source = SubjectActivityItemSource(
+            subject: subject,
+            body: body,
+            headerTitle: headerTitle ?? subject,
+            headerSubtitle: headerSubtitle,
+            headerIcon: icon
+        )
         let controller = UIActivityViewController(
             activityItems: [source], applicationActivities: nil)
 
@@ -327,6 +342,24 @@ public class MailToPlugin: NSObject, FlutterPlugin {
     }
 
     // MARK: - Helpers
+
+    /// The host app's own icon, for the share-sheet header.
+    ///
+    /// Asset-catalog app icons are not addressable by their catalog name, so
+    /// the actual filename is read out of `CFBundleIcons`.
+    private static func appIcon() -> UIImage? {
+        guard
+            let icons = Bundle.main.object(forInfoDictionaryKey: "CFBundleIcons")
+                as? [String: Any],
+            let primary = icons["CFBundlePrimaryIcon"] as? [String: Any],
+            let files = primary["CFBundleIconFiles"] as? [String],
+            let lastFile = files.last
+        else {
+            return nil
+        }
+
+        return UIImage(named: lastFile)
+    }
 
     private func invalidArguments() -> FlutterError {
         FlutterError(
@@ -350,17 +383,30 @@ public class MailToPlugin: NSObject, FlutterPlugin {
     }
 }
 
-/// Carries the subject into the share sheet.
+/// Carries the subject and the header preview into the share sheet.
 ///
-/// A plain `String` activity item has no subject, so mail apps opened from the
-/// sheet would start with an empty subject line.
+/// A plain `String` activity item has no subject — mail apps opened from the
+/// sheet would start with an empty subject line — and no `LPLinkMetadata`, so
+/// the header degrades to a bare app icon with no title.
 private final class SubjectActivityItemSource: NSObject, UIActivityItemSource {
     private let subject: String
     private let body: String
+    private let headerTitle: String
+    private let headerSubtitle: String?
+    private let headerIcon: UIImage?
 
-    init(subject: String, body: String) {
+    init(
+        subject: String,
+        body: String,
+        headerTitle: String,
+        headerSubtitle: String?,
+        headerIcon: UIImage?
+    ) {
         self.subject = subject
         self.body = body
+        self.headerTitle = headerTitle
+        self.headerSubtitle = headerSubtitle
+        self.headerIcon = headerIcon
     }
 
     func activityViewControllerPlaceholderItem(_ controller: UIActivityViewController) -> Any {
@@ -379,6 +425,27 @@ private final class SubjectActivityItemSource: NSObject, UIActivityItemSource {
         subjectForActivityType activityType: UIActivity.ActivityType?
     ) -> String {
         subject
+    }
+
+    /// Fills the header strip above the app grid: icon, bold title, subtitle.
+    ///
+    /// `originalURL` is what iOS renders as the grey second line — a shared
+    /// link would show its domain there. A file URL puts arbitrary text in the
+    /// same slot.
+    func activityViewControllerLinkMetadata(
+        _ controller: UIActivityViewController
+    ) -> LPLinkMetadata? {
+        let metadata = LPLinkMetadata()
+        metadata.title = headerTitle
+
+        if let headerIcon {
+            metadata.iconProvider = NSItemProvider(object: headerIcon)
+        }
+        if let headerSubtitle, !headerSubtitle.isEmpty {
+            metadata.originalURL = URL(fileURLWithPath: headerSubtitle)
+        }
+
+        return metadata
     }
 }
 

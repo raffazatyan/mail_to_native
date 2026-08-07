@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'mail_to_platform_interface.dart';
 import 'src/mail_app.dart';
 import 'src/mail_message.dart';
+import 'src/share_metadata.dart';
 
 /// Method-channel implementation of [MailToPlatform].
 class MethodChannelMailTo extends MailToPlatform {
@@ -58,11 +59,11 @@ class MethodChannelMailTo extends MailToPlatform {
   }
 
   @override
-  Future<bool> share(MailMessage message) async {
-    final isShared = await methodChannel.invokeMethod<bool>(
-      'share',
-      message.toMap(),
-    );
+  Future<bool> share(MailMessage message, {ShareMetadata? metadata}) async {
+    final isShared = await methodChannel.invokeMethod<bool>('share', {
+      ...message.toMap(),
+      'metadata': metadata?.toMap(),
+    });
 
     return isShared ?? false;
   }

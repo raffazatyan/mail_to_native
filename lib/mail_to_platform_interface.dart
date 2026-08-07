@@ -3,6 +3,7 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'mail_to_method_channel.dart';
 import 'src/mail_app.dart';
 import 'src/mail_message.dart';
+import 'src/share_metadata.dart';
 
 abstract class MailToPlatform extends PlatformInterface {
   MailToPlatform() : super(token: _token);
@@ -45,7 +46,7 @@ abstract class MailToPlatform extends PlatformInterface {
   }
 
   /// Opens the system share sheet with [message].
-  Future<bool> share(MailMessage message) {
+  Future<bool> share(MailMessage message, {ShareMetadata? metadata}) {
     throw UnimplementedError('share() has not been implemented.');
   }
 }
