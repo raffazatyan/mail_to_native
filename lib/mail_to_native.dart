@@ -1,4 +1,4 @@
-import 'mail_to_platform_interface.dart';
+import 'mail_to_native_platform_interface.dart';
 import 'src/mail_app.dart';
 import 'src/mail_message.dart';
 import 'src/share_metadata.dart';

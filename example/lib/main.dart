@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mail_to/mail_to.dart';
+import 'package:mail_to_native/mail_to_native.dart';
 
 void main() => runApp(const ExampleApp());
 

@@ -5,7 +5,7 @@ import XCTest
 // If your plugin has been explicitly set to "type: .dynamic" in the Package.swift,
 // you will need to add your plugin as a dependency of RunnerTests within Xcode.
 
-@testable import mail_to
+@testable import mail_to_native
 
 // This demonstrates a simple unit test of the Swift portion of this plugin's implementation.
 //

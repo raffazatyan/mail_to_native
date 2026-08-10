@@ -1,9 +1,9 @@
-name: mail_to
+name: mail_to_native
 description: "Pick an installed mail app and open its compose screen with subject and body prefilled."
 version: 0.7.2
-homepage: https://github.com/raffazatyan/mail_to
-repository: https://github.com/raffazatyan/mail_to
-issue_tracker: https://github.com/raffazatyan/mail_to/issues
+homepage: https://github.com/raffazatyan/mail_to_native
+repository: https://github.com/raffazatyan/mail_to_native
+issue_tracker: https://github.com/raffazatyan/mail_to_native/issues
 
 topics:
   - email

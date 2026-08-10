@@ -1,6 +1,6 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
-import 'mail_to_method_channel.dart';
+import 'mail_to_native_method_channel.dart';
 import 'src/mail_app.dart';
 import 'src/mail_message.dart';
 import 'src/share_metadata.dart';

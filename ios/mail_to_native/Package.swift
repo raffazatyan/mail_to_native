@@ -4,19 +4,19 @@
 import PackageDescription
 
 let package = Package(
-    name: "mail_to",
+    name: "mail_to_native",
     platforms: [
         .iOS("13.0")
     ],
     products: [
-        .library(name: "mail-to", targets: ["mail_to"])
+        .library(name: "mail-to-native", targets: ["mail_to_native"])
     ],
     dependencies: [
         .package(name: "FlutterFramework", path: "../FlutterFramework")
     ],
     targets: [
         .target(
-            name: "mail_to",
+            name: "mail_to_native",
             dependencies: [
                 .product(name: "FlutterFramework", package: "FlutterFramework")
             ],

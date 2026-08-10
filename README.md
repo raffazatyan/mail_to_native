@@ -1,8 +1,8 @@
-# mail_to
+# mail_to_native
 
 Pick an installed mail app and open its **compose** screen with subject and body prefilled — through a **native** dialog, not a Flutter widget.
 
-Most packages in this space open the mail app's *inbox*. `mail_to` opens a prefilled draft, in the app the user picks.
+Most packages in this space open the mail app's *inbox*. `mail_to_native` opens a prefilled draft, in the app the user picks.
 
 | | iOS | Android |
 |---|---|---|
@@ -19,7 +19,7 @@ On iOS 14+ `mailto:` is handed to the user's **default** mail app. If that defau
 ## Usage
 
 ```dart
-import 'package:mail_to/mail_to.dart';
+import 'package:mail_to_native/mail_to_native.dart';
 
 const message = MailMessage(
   subject: 'Meeting notes',

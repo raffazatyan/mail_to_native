@@ -1,1 +1,1 @@
-rootProject.name = "mail_to"
+rootProject.name = "mail_to_native"

@@ -1,6 +1,6 @@
 # mail_to_example
 
-Demonstrates how to use the mail_to plugin.
+Demonstrates how to use the mail_to_native plugin.
 
 ## Getting Started
 

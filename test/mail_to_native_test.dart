@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mail_to/mail_to.dart';
-import 'package:mail_to/mail_to_platform_interface.dart';
+import 'package:mail_to_native/mail_to_native.dart';
+import 'package:mail_to_native/mail_to_native_platform_interface.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 class FakeMailToPlatform extends MailToPlatform with MockPlatformInterfaceMixin {
