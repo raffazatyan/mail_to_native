@@ -12,7 +12,7 @@ Most packages in this space open the mail app's *inbox*. `mail_to_native` opens 
 
 | iOS | Android |
 |:---:|:-------:|
-| ![iOS Demo](ios-guide.gif) | ![Android Demo](android-guide.gif) |
+| ![iOS Demo](https://raw.githubusercontent.com/raffazatyan/mail_to_native/main/ios_demo.gif) | ![Android Demo](https://raw.githubusercontent.com/raffazatyan/mail_to_native/main/android_demo.gif) |
 
 ## Platform Support
 
