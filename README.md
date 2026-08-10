@@ -1,8 +1,26 @@
 # mail_to_native
 
+[![Pub Version](https://img.shields.io/pub/v/mail_to_native)](https://pub.dev/packages/mail_to_native)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-iOS%20%7C%20Android-lightgrey)](https://flutter.dev)
+
 Pick an installed mail app and open its **compose** screen with subject and body prefilled — through a **native** dialog, not a Flutter widget.
 
 Most packages in this space open the mail app's *inbox*. `mail_to_native` opens a prefilled draft, in the app the user picks.
+
+## Demo
+
+| iOS | Android |
+|:---:|:-------:|
+| ![iOS Demo](ios-guide.gif) | ![Android Demo](android-guide.gif) |
+
+## Platform Support
+
+| Platform | Status | Notes |
+|----------|--------|-------|
+| iOS | ✅ Full support (13.0+) | `UIAlertController` picker, `MFMailComposeViewController` for Apple Mail |
+| Android | ✅ Full support (API 24+) | Native dialog with launcher icons, `ACTION_SENDTO` |
+| Web / desktop | ❌ Not supported | N/A |
 
 | | iOS | Android |
 |---|---|---|
@@ -15,6 +33,15 @@ Most packages in this space open the mail app's *inbox*. `mail_to_native` opens 
 ## Why Apple Mail is special
 
 On iOS 14+ `mailto:` is handed to the user's **default** mail app. If that default is Gmail, a `mailto:` link labelled "Apple Mail" opens Gmail. There is no Apple-Mail-only compose URL, so this plugin drives `MFMailComposeViewController` instead — which always composes in Apple Mail, as an in-app sheet.
+
+## Installation
+
+```yaml
+dependencies:
+  mail_to_native: ^0.8.0
+```
+
+iOS needs one extra step — see [iOS setup](#ios-setup-required). Android needs none.
 
 ## Usage
 

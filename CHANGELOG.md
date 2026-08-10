@@ -84,3 +84,10 @@
   `LPLinkMetadata.originalURL` — the only way to render a subtitle — makes iOS
   treat the item as a file, so the subtitle is now skipped unless `icon` or
   `image` supplies artwork to go with it.
+
+## 0.8.0
+
+* README: pub/license/platform badges, a demo table, a platform-support table
+  and an installation snippet.
+* Example app rebuilt as a single compose screen — subject and body fields with
+  live counters, and a send button that runs `MailTo.pickAndCompose`.
