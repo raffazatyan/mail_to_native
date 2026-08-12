@@ -1,6 +1,6 @@
 name: mail_to_native
 description: "Pick an installed mail app and open its compose screen with subject and body prefilled."
-version: 0.8.0
+version: 0.8.1
 homepage: https://github.com/raffazatyan/mail_to_native
 repository: https://github.com/raffazatyan/mail_to_native
 issue_tracker: https://github.com/raffazatyan/mail_to_native/issues
@@ -13,7 +13,7 @@ topics:
   - ios
 
 environment:
-  sdk: ^3.12.2
+  sdk: '>=3.8.0 <4.0.0'
   flutter: '>=3.3.0'
 
 dependencies:
