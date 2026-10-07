@@ -96,3 +96,7 @@
 
 * Widened the Dart SDK constraint to `>=3.8.0 <4.0.0` (was `^3.12.2`), so the
   package installs on Flutter 3.32 and newer.
+
+## 0.8.2
+
+* Maintenance release, no functional changes.

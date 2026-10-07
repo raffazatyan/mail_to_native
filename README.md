@@ -38,7 +38,7 @@ On iOS 14+ `mailto:` is handed to the user's **default** mail app. If that defau
 
 ```yaml
 dependencies:
-  mail_to_native: ^0.8.1
+  mail_to_native: ^0.8.2
 ```
 
 iOS needs one extra step — see [iOS setup](#ios-setup-required). Android needs none.
